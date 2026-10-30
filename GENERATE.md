@@ -26,6 +26,9 @@ Keep the structure of the existing `nfl.json` / `ncaa.json` (top level: `title`,
 - Check the starting QB and the injured-reserve list for BOTH teams, because a QB change moves the spread.
 - Lines for props: use a posted book number if you can find one; otherwise estimate from recent averages and say so in the commit message.
 
+## 2b. Independent verification (required before any push)
+After drafting, spawn a separate verifier agent (Agent tool, general-purpose) that has NOT seen your research. Give it only the list of (player, team, opponent, stat, line) and each game's (home, spread, total), and ask it to search fresh and return, per item: on the team's active roster? on IR/PUP/suspended/inactive? injury designation this week? is he the starter at that position? For lines: the current spread/total from at least two books. Replace any player it flags, and correct any line that is off by more than 1 point. If the verifier cannot be run, say so in the commit message and the report. Never skip this step to save time.
+
 ## 3. Check, then publish
 1. `node validate.js nfl.json` and `node validate.js ncaa.json` must print OK. If a file cannot be made to pass, do not push that file.
 2. Every prop player: confirm team and status once more right before writing.
@@ -34,3 +37,6 @@ Keep the structure of the existing `nfl.json` / `ncaa.json` (top level: `title`,
 
 ## 4. Report
 Reply with what was published, any lines or props that are estimates, and anything unverified.
+
+## 5. Friday audit (the Friday 8:00 CT run, when both files are already current)
+Do not edit the files or change a live week. Re-run the verifier from 2b on the files now on main, with Friday's final injury designations. Report any prop player now Out/Doubtful/IR/inactive or any line that moved by 2+ points, naming the game, so the host can swap it by hand in the Host tab before lock.
