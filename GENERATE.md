@@ -17,6 +17,7 @@ Keep the structure of the existing `nfl.json` / `ncaa.json` (top level: `title`,
 - Allowed `ps` (graded automatically from ESPN box scores): Pass yds, Pass TDs, INT, Rush yds, Rush TDs, Receptions, Rec yds, Rec TDs. No score props.
 - NFL: every game on the Sunday only. College: 25 games, must include every primetime game on TV.
 - Tiebreaker needs no field: Vikings game, else Packers game, else last game. Add `"tb": true` to a game only to override.
+- Top level `lockAt`: the FIRST kickoff of the slate as an ISO time with the correct Central offset (CDT is -05:00 until Nov 1 2026, then CST -06:00; check the date). The server auto-locks picks at that moment. Example `"lockAt": "2026-11-08T12:00:00-06:00"`. Use the earliest `t` among the games.
 - Title like "NFL Week 9 - Sunday Nov 8".
 
 ## 2. Player prop rules (strict, the host has been burned before)

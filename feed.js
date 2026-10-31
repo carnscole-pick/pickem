@@ -8,6 +8,7 @@ const isNum = (v) => typeof v === 'number' && isFinite(v);
 function slateError(d) {
   if (!d || typeof d !== 'object' || !Array.isArray(d.games) || !d.games.length) return 'needs a games list';
   if (d.games.length > 40) return 'too many games';
+  if (d.lockAt !== undefined && (typeof d.lockAt !== 'string' || !isFinite(Date.parse(d.lockAt)))) return 'lockAt must be a date/time like 2026-11-01T12:00:00-06:00';
   const seen = {};
   for (let i = 0; i < d.games.length; i++) {
     const g = d.games[i], n = 'game ' + (i + 1) + ': ';
@@ -44,7 +45,9 @@ function start({ url, docs, touch, dataDir, contests }) {
     const err = slateError(d);
     if (err) return console.log('[feed ' + c + '] rejected ' + d.feed + ': ' + err);
     const games = d.games.map((g) => { const o = {}; keep.forEach((k) => { if (g[k] !== undefined) o[k] = g[k]; }); return o; });
-    touch('board/' + c + '-slate', { id: 'w' + Date.now().toString(36), title: String(d.title || 'New week').slice(0, 60), locked: false, games });
+    const slate = { id: 'w' + Date.now().toString(36), title: String(d.title || 'New week').slice(0, 60), locked: false, games };
+    if (typeof d.lockAt === 'string' && isFinite(Date.parse(d.lockAt))) slate.lockAt = new Date(d.lockAt).toISOString();
+    touch('board/' + c + '-slate', slate);
     seen[c] = d.feed;
     fs.writeFileSync(seenFile, JSON.stringify(seen));
     console.log('[feed ' + c + '] loaded ' + d.feed + ' (' + games.length + ' games)');
