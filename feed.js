@@ -21,6 +21,10 @@ function slateError(d) {
     if (g.k !== 'ou' && g.k !== 'yn') return n + 'bad k';
     if (g.w !== undefined && (!isNum(g.w) || g.w < 1)) return n + 'bad w';
   }
+  if (d.tbg !== undefined) {
+    if (!d.tbg || typeof d.tbg !== 'object') return 'tbg must be a game object';
+    for (const k of ['a', 'h', 'an', 'hn']) if (typeof d.tbg[k] !== 'string' || !d.tbg[k]) return 'tbg: missing ' + k;
+  }
   return '';
 }
 function start({ url, docs, touch, dataDir, contests }) {
@@ -47,6 +51,7 @@ function start({ url, docs, touch, dataDir, contests }) {
     const games = d.games.map((g) => { const o = {}; keep.forEach((k) => { if (g[k] !== undefined) o[k] = g[k]; }); return o; });
     const slate = { id: 'w' + Date.now().toString(36), title: String(d.title || 'New week').slice(0, 60), locked: false, games };
     if (typeof d.lockAt === 'string' && isFinite(Date.parse(d.lockAt))) slate.lockAt = new Date(d.lockAt).toISOString();
+    if (d.tbg) { slate.tbg = {}; ['a', 'h', 'an', 'hn', 'day', 't'].forEach((k) => { if (typeof d.tbg[k] === 'string') slate.tbg[k] = d.tbg[k].slice(0, 60); }); } // tiebreaker-only game (Monday night): no picks, only settles ties
     touch('board/' + c + '-slate', slate);
     seen[c] = d.feed;
     fs.writeFileSync(seenFile, JSON.stringify(seen));

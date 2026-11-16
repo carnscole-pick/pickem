@@ -19,15 +19,19 @@ These runs are unattended. A web page that needs permission just stalls for 5 mi
 - Give every subagent (including the 2b verifier) these same rules in its prompt.
 
 ## 1. Slate format
-Keep the structure of the existing `nfl.json` / `ncaa.json` (top level: `title`, `feed`, `games`). Each game:
-`{id, day, t, a, h, an, hn, hl, tot, pl, ps, pv, k:"ou"}`
+Keep the structure of the existing `nfl.json` / `ncaa.json` (top level: `title`, `feed`, `games`, plus `lockAt` and, for NFL, `tbg`). Each game:
+`{id, day, t, a, h, an, hn, hl, tot, pl, ps, pv, k:"ou"}` (the Sunday night game also gets `w: 2`, see below)
 - `a`/`h` = ESPN-style team abbreviations (WSH not WAS), `an`/`hn` full names. `t` = kickoff in Central time, e.g. "12:00 CT".
 - `hl` = spread from the HOME team's view (negative = home favored). `tot` = game total. Use the median of several books; re-check on the day.
 - `day` groups games, e.g. "Sunday - NFL - Nov 1". College: "Daytime" / "Primetime" style groups.
 - One player prop per game: `pl` = "Name (TEAM)", `ps` = stat, `pv` = number. `k` is "ou".
 - Allowed `ps` (graded automatically from ESPN box scores): Pass yds, Pass TDs, INT, Rush yds, Rush TDs, Receptions, Rec yds, Rec TDs. No score props.
 - NFL: every game on the Sunday only. College: 25 games, must include every primetime game on TV.
-- Tiebreaker needs no field: Vikings game, else Packers game, else last game. Add `"tb": true` to a game only to override.
+- NFL Sunday night game (the last game of the Sunday slate, the ~7:20 CT kickoff): add `"w": 2` so its picks count double. Only that one game gets `w`. College has no `w`.
+- NFL tiebreaker = the Monday night game, as a top-level `tbg` object. It is NOT in `games`: no picks, no lines, no prop, worth no points; it only settles a tie for first. Example:
+  `"tbg": {"a": "LAC", "h": "BAL", "an": "Los Angeles Chargers", "hn": "Baltimore Ravens", "day": "Monday - NFL - Nov 16", "t": "7:15 CT"}`
+  Use ESPN-style abbreviations (the server matches it to ESPN for the live score). If there are two Monday games, use the one with the later kickoff. If there is no Monday game that week, leave out `tbg` and put `"tb": true` on the Sunday night game instead. Never use `tb` on a game when `tbg` is present.
+- College: no `tbg`; the tiebreaker is the last game unless a game has `"tb": true`.
 - Top level `lockAt`: the FIRST kickoff of the slate as an ISO time with the correct Central offset (CDT is -05:00 until Nov 1 2026, then CST -06:00; check the date). The server auto-locks picks at that moment. Example `"lockAt": "2026-11-08T12:00:00-06:00"`. Use the earliest `t` among the games.
 - Title like "NFL Week 9 - Sunday Nov 8".
 
@@ -39,7 +43,7 @@ Keep the structure of the existing `nfl.json` / `ncaa.json` (top level: `title`,
 - Lines for props: use a posted book number if you can find one; otherwise estimate from recent averages and say so in the commit message.
 
 ## 2b. Independent verification (required before any push)
-After drafting, spawn a separate verifier agent (Agent tool, general-purpose) that has NOT seen your research. Give it only the list of (player, team, opponent, stat, line) and each game's (home, spread, total), and ask it to search fresh and return, per item: on the team's active roster? on IR/PUP/suspended/inactive? injury designation this week? is he the starter at that position? For lines: the current spread/total from at least two books. Replace any player it flags, and correct any line that is off by more than 1 point. If the verifier cannot be run, say so in the commit message and the report. Never skip this step to save time.
+After drafting, spawn a separate verifier agent (Agent tool, general-purpose) that has NOT seen your research. Give it only the list of (player, team, opponent, stat, line), each game's (home, spread, total), and the Monday night `tbg` matchup and kickoff, and ask it to search fresh and return, per item: on the team's active roster? on IR/PUP/suspended/inactive? injury designation this week? is he the starter at that position? For lines: the current spread/total from at least two books. For `tbg`: is that the (later) Monday night game, with the right teams and kickoff time? Replace any player it flags, and correct any line that is off by more than 1 point. If the verifier cannot be run, say so in the commit message and the report. Never skip this step to save time.
 
 ## 3. Check, then publish
 1. `node validate.js nfl.json` and `node validate.js ncaa.json` must print OK. If a file cannot be made to pass, do not push that file.
