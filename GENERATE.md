@@ -1,11 +1,22 @@
-# Weekly slate job (runs Thursday noon CT, retries until Friday morning)
+# Weekly slate job (runs Wednesday 7:00 PM CT, retry 9:00 PM; catch-up + audit Thursday 9:00 AM CT)
 
-Goal: publish `nfl.json` (this Sunday's NFL games) and `ncaa.json` (this Saturday's college games) to `main` of this repo. The Carns Pick'em server (carnspickem.com) reads them from raw.githubusercontent.com and loads them by itself when no week is live.
+Goal: publish `nfl.json` (this Sunday's NFL games) to `main` of this repo. The Carns Pick'em server (carnspickem.com) reads them from raw.githubusercontent.com and loads them by itself when no week is live.
+
+## NFL only (College and NBA are for special events)
+The weekly job builds ONLY `nfl.json`. Do not build, edit or audit `ncaa.json` or `nba.json`, and do not treat an old `ncaa.json` as missing or out of date; that is expected.
+Exception: if `SPECIAL.md` exists in this repo and lists a College or NBA event whose date falls in the coming week (e.g. `ncaa 2026-12-05 Conference championships`), also build that contest's file for that date, following the same rules. Leave `SPECIAL.md` alone; the host maintains it.
 
 ## 0. Skip rule (the job is idempotent)
 The feed id is the game date: `nfl-YYYY-MM-DD` (the Sunday) and `ncaa-YYYY-MM-DD` (the Saturday).
-For each contest, if the file already on `main` has that exact feed id, do NOTHING for that contest. If both are current, stop. Never overwrite a file whose feed id is current, and never change an old id to re-load a week.
+For each contest, if the file already on `main` has that exact feed id, do NOTHING for that contest. If every file this week needs (normally just `nfl.json`) is current, stop. Never overwrite a file whose feed id is current, and never change an old id to re-load a week.
 If there are no NFL games that Sunday (bye/offseason) or no college slate, skip that contest and say so.
+
+## Web research rules (nobody is watching, so nothing can be approved)
+These runs are unattended. A web page that needs permission just stalls for 5 minutes and then fails, so:
+- Only WebFetch a URL that appeared in a WebSearch result in this session. Never type, guess or build a URL yourself (no editing ids, years or player slugs into a site's URL pattern), even on a site you used before.
+- To reach a specific page (a stats table, a team injury report), WebSearch for it and fetch the link from the results.
+- If a fetch asks for permission or fails, do not retry it. Use another search result, or the search summary itself, and note the gap in the report.
+- Give every subagent (including the 2b verifier) these same rules in its prompt.
 
 ## 1. Slate format
 Keep the structure of the existing `nfl.json` / `ncaa.json` (top level: `title`, `feed`, `games`). Each game:
@@ -39,5 +50,5 @@ After drafting, spawn a separate verifier agent (Agent tool, general-purpose) th
 ## 4. Report
 Reply with what was published, any lines or props that are estimates, and anything unverified.
 
-## 5. Friday audit (the Friday 8:00 CT run, when both files are already current)
-Do not edit the files or change a live week. Re-run the verifier from 2b on the files now on main, with Friday's final injury designations. Report any prop player now Out/Doubtful/IR/inactive or any line that moved by 2+ points, naming the game, so the host can swap it by hand in the Host tab before lock.
+## 5. Thursday audit (the Thursday 9:00 AM CT run, when the week's files are already current)
+Do not edit the files or change a live week. Re-run the verifier from 2b on the files now on main, with the latest injury designations available (Wednesday/Thursday practice reports; final NFL designations come out Friday, so flag Questionable players as "watch"). Report any prop player now Out/Doubtful/IR/inactive or any line that moved by 2+ points, naming the game, so the host can swap it by hand in the Host tab before lock.
