@@ -1,5 +1,10 @@
 # Weekly slate job (runs Wednesday 7:00 PM CT, retry 9:00 PM; catch-up + audit Thursday 9:00 AM CT)
 
+## THANKSGIVING WEEK OVERRIDE (applies only from Tue 2026-11-24 through Mon 2026-11-30)
+The host built the NFL Week 13 slate (Wed Nov 25 to Sun Nov 29, special Thanksgiving rules) by hand and loaded it on the site directly.
+If today's date (America/Chicago) is between 2026-11-24 and 2026-11-30 inclusive: do NOTHING. Do not build, edit, push, validate or audit any file (nfl.json, ncaa.json, nba.json or anything else), and do not run the section 5 audit. Reply only: "Thanksgiving week: the host built this week's slate by hand, nothing done." Then stop.
+From 2026-12-01 on, ignore this section completely and follow the normal rules below.
+
 Goal: publish `nfl.json` (this Sunday's NFL games) to `main` of this repo. The Carns Pick'em server (carnspickem.com) reads them from raw.githubusercontent.com and loads them by itself when no week is live.
 
 ## NFL only (College and NBA are for special events)
